@@ -26,6 +26,15 @@ From assignment
 
 # Log
 
+## 7/22/2026: Assignment the first (part 2)
+
+Renamed `pseudocoding.md` to `PH_part_2_pseudocode.md`
+
+- Revised doc string and expected output for write_output_file
+- Created dict_hopped_indices, which contains unordered unmatched pairs as keys 
+- Added quality score clarification in initial if statement in algorithm
+- Added two histograms in Output: Graph: section
+
 ## 7/21/26: Assignment the first
 
 ### Part 2 / Pseudocode
