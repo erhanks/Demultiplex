@@ -6,24 +6,28 @@
 
 ```
 def reverse_complement(DNA: str) -> str:
-    ''' Takes in a 5'-3' string of DNA and outputs a string of the 5'-3' reverse complement. Case insensitive.'''
-    return reverse
+    ''' Takes in a 5'-3' string of DNA and outputs a string of the 5'-3' reverse complement.'''
+    bases = dict with bases as keys and complementary base as value
+    for letter in DNA:
+        complement += bases[letter]
+    reverse(complement)
+    return complement
 ```
 Input: "ATGC"
 
 Expected output: "GCAT"
 
 ```
-def write_output_file(file_handle: str, read_record: lst)
-    ''' Takes in a file handle and a list containing each line of a record
-    '''
+def write_output_file(file_handle: str, read_record: lst, ix1 = index1: str, ix2 = index2: str)
+    ''' Takes in a file handle of a fastq file, and a list containing each line of a fastq record. Default index inputs are variables named index1 and index2.'''
+
     add_index_to_header = index1 + "-" + index2 
-    write/append (read_record [0] + add_index_to header) to file_handle
-    write/append (read_record[1,2,3]) to file_handle
+    write/append (read_record[header] + add_index_to header) to file_handle
+    write/append (read_record[sequence, + line, quality scores]) to file_handle
 ```
 Input: fh, read1_record
 
-Expected output: 
+Expected output: lines from read1_record appended to the end of fh, with the indexes added to the header line
 
 
 # ALGORITHM
@@ -44,16 +48,20 @@ Open fastq files:
 
 Open index_file (text file)
     index_dict = {}
-    index_list = []
     for index in index_file
         add index to index_dict as keys with values of 0
-        add index to index_list
+    index_list = keys_from(index_dict)
 
 count_matched_indices = 0
 count_hopped_indices = 0
 count_unknown = 0
 
 dict_hopped_indices = {}
+for this_index in index_list:
+    index_list_without_this_index = index_list.pop(index)
+    for that_index in index_list_without_this_index:
+        add ordered(this_index, that_index) to dict_hopped_indices as keys with values of 0
+        - Note: ordered to prevent duplicate index pairs
 
 While true loop:
 
@@ -65,9 +73,14 @@ While true loop:
     add next four lines of each file to each empty list (dont forget to strip)
 
     index1 = sequence from index1_record
-    index2 = reverse_complement( sequence from index2_record)
+    index2 = reverse_complement(sequence from index2_record)
 
-    if index1 or index2 contains "N":
+    quality_score1 = read1_record[3]
+    quality_score2 = read2_record[3]
+
+    quality_threshold = (determine in part 1)
+
+    if index1 or index2 contains "N" or quality_score1 or quality_score2 is below quality_threshold:
         count_unknown += 1
         write_output_file(R1_unknown_indices, read1_record)
         write_output_file(R2_unknown_indices, read2_record)
@@ -81,17 +94,18 @@ While true loop:
 
     elif index1 and index2 are in index_list:
         count_hopped_indices += 1
-        dict_hopped_indices[index1 + index2] += 1
-        
+        dict_hopped_indices[ordered(index1, index2)] += 1
+        - Note: ordered to prevent duplicate index pairs
+
         write_output_file(R1_hopped_indices, read1_record)
         write_output_file(R2_hopped_indices, read2_record)
-
 
     else:
         count_unknown += 1
         write_output_file(R1_unknown_indices, read1_record)
         write_output_file(R2_unknown_indices, read2_record)
 ```
+
 # Outputs
 ## Print:
 Number of properly matched read-pairs: {value}
@@ -105,3 +119,5 @@ Proportion of read-pairs with one or more unknown indices: {value/total}
 
 ## Graph: 
 Histogram or bar graph of index_dict
+Histogram or bar graph of dict_hopped_indices
+Histogram or bar graph of index_dict and dict_hopped_indices
