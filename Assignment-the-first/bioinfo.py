@@ -10,7 +10,16 @@
 '''Bioinformatics functions written in class or for assignments
 (or otherwise)'''
 
-__version__ = "0.3"   
+__version__ = "0.3.1" 
+#version 0.0: Creation in Bi621
+    #version 0.1: added ___
+    #version 0.2: added ___
+    #version 0.3: added ___
+        #version 0.3.1: added reverse_complement()
+        
+# ----- Upcoming versions ----- #
+#version 1.0: feedback received and revised on all previous versions
+
 # Read way more about versioning here:
 # https://en.wikipedia.org/wiki/Software_versioning
 
