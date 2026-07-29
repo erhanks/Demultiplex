@@ -6,22 +6,23 @@ import itertools as it
 import gzip
 
 def get_args():
-    parser = arg.ArgumentParser(description="HELP")
-    parser.add_argument('-r1', '--read_1')
-    parser.add_argument('-i1', '--index_1')
-    parser.add_argument('-r2', '--read_2')
-    parser.add_argument('-i2', '--index_2')
-    parser.add_argument('-f', '--indexes_file')
-    parser.add_argument('-l', "--output_location")
+    parser = arg.ArgumentParser(description="Takes in 2 __ fastq files and 2 index __ fastq files, " \
+    "the file name of the indexes, and the file location of the output")
+    parser.add_argument('-r1', '--read_1', type = str, required=True)
+    parser.add_argument('-i1', '--index_1', type = str, required=True)
+    parser.add_argument('-r2', '--read_2', type = str, required=True)
+    parser.add_argument('-i2', '--index_2', type = str, required=True)
+    parser.add_argument('-f', '--indexes_file', type = str, required=True)
+    parser.add_argument('-l', "--output_location", type = str, required=True)
     return parser.parse_args()
 
 def write_output_file(fh, read_record: list, indx1:str, indx2:str):
     '''Takes in a file handle of a fastq file, and a list containing each line of a fastq record. Default index inputs are variables named index1 and index2.'''
-    add_index_to_header = indx1 + "-" + indx2
+    add_index_to_header = indx1 + "-" + indx2 + "\n"
     fh.write(read_record[0] + add_index_to_header)
-    fh.write(read_record[1])
-    fh.write(read_record[2])
-    fh.write(read_record[3]) 
+    fh.write(read_record[1] + "\n")
+    fh.write(read_record[2] + "\n")
+    fh.write(read_record[3] + "\n") 
 
 args = get_args()
 read1 = args.read_1
@@ -38,9 +39,12 @@ with open(index_file, "rt") as inf:
         single_indexes.append(index)
 
 index_pairs = it.product(single_indexes, repeat=2)
-matched_files= {}
-
 count_index_pairs = dict.fromkeys(index_pairs,0)
+
+matched_files= {}
+for inx in single_indexes:
+    matched_files[str(inx)+"_R1"] = output + "/R1_" + str(inx) + ".fastq"
+    matched_files[str(inx)+"_R2"] = output + "/R2_" + str(inx) + ".fastq"
 
 r1 = gzip.open(read1,"rt")
 r2 = gzip.open(read2,"rt")
@@ -50,11 +54,6 @@ hop_R1 = open(output + "/R1_hopped.fastq", "a")
 hop_R2 = open(output + "/R2_hopped.fastq", "a")
 unkn_R1 = open(output + "/R1_unknown.fastq", "a")
 unkn_R2 = open(output + "/R2_unknown.fastq", "a")
-
-#i do not know if this is how thats supposed to be done
-for inx in single_indexes:
-    matched_files[str(inx)+"_R1"] = output + "/R1_" + str(inx) + ".fastq"
-    matched_files[str(inx)+"_R2"] = output + "/R2_" + str(inx) + ".fastq"
 
 for handle, name in matched_files.items():
     handle = open (name, "a")
@@ -117,8 +116,8 @@ for handle, name in matched_files.items():
 total = count_matched_indices + count_hopped_indices + count_unknown
 
 print(f"Number of properly matched read-pairs: {count_matched_indices}")
-print(f"Proportion of read-pairs that were properly matched: {count_matched_indices/(total)}")
+print(f"Proportion of read-pairs that were properly matched: {count_matched_indices / total}")
 print(f"Number of pairs with index-hopping observed: {count_hopped_indices}")
-print(f"Proportion of read-pairs with index-hopping observed: {count_hopped_indices/total}")
+print(f"Proportion of read-pairs with index-hopping observed: {count_hopped_indices / total}")
 print(f"Number of pairs with one or more unknown indices: {count_unknown}")
-print(f"Proportion of read-pairs with one or more unknown indices: {count_unknown/total}")
+print(f"Proportion of read-pairs with one or more unknown indices: {count_unknown / total}")

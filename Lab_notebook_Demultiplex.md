@@ -35,6 +35,17 @@
 
 # Log
 
+## 7/29/2026: Assignment the third (and first)
+Started reviewing the comments I got, made revisions to pseudocode
+
+Started working on python script, `demux.py`, and made a bunch of revisions to the way I was opening the 48 files for the correctly paired records. Now made a dictionary that contains the file paths and file handles.
+
+I dont know the best way to have my write_output_file function do what I want it to without adding redundancies later
+
+the dictionary index_pairs has tuples as keys and i dont know how I feel about it.
+
+Can't currently test anything bc I don't have access to talapas (cause I left my phone at home)
+
 ## 7/22/2026: Assignment the first (part 2)
 
 Renamed `pseudocoding.md` to `PH_part_2_pseudocode.md`
