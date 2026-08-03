@@ -4,6 +4,7 @@ import bioinfo as bi
 import argparse as arg
 import itertools as it
 import gzip
+from typing import TextIO
 
 def get_args():
     parser = arg.ArgumentParser(description="Takes in 2 __ fastq files and 2 index __ fastq files, " \
@@ -50,13 +51,13 @@ r1 = gzip.open(read1,"rt")
 r2 = gzip.open(read2,"rt")
 i1 = gzip.open(index_R1, "rt")
 i2 = gzip.open(index_R2, "rt")
-hop_R1 = open(output + "/R1_hopped.fastq", "a")
-hop_R2 = open(output + "/R2_hopped.fastq", "a")
-unkn_R1 = open(output + "/R1_unknown.fastq", "a")
-unkn_R2 = open(output + "/R2_unknown.fastq", "a")
+hop_R1 = open(output + "/R1_hopped.fastq", "w")
+hop_R2 = open(output + "/R2_hopped.fastq", "w")
+unkn_R1 = open(output + "/R1_unknown.fastq", "w")
+unkn_R2 = open(output + "/R2_unknown.fastq", "w")
 
 for handle, name in matched_files.items():
-    handle = open (name, "a")
+    handle = open (name, "w")
 
 count_matched_indices = 0
 count_hopped_indices = 0
