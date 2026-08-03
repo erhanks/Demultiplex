@@ -10,21 +10,24 @@
 '''Bioinformatics functions written in class or for assignments
 (or otherwise)'''
 
-__version__ = "0.3.1" 
+__version__ = "1.2" 
 #version 0.0: Creation in Bi621 (Template)
     #version 0.1: added convert_phred(), qual_score(), validate_base_seq()
     #version 0.2: added gc_content(), calc_median()
     #version 0.3: added oneline_fasta()
-        #version 0.3.1: added reverse_complement()
-        
-# ----- Upcoming versions ----- #
+
 #version 1.0: feedback received and revised on all previous versions
+    #version 1.1: added reverse_complement()
+    #version 1.2: added init_list and populate_list from PS4, with some revisons
+
+# ----- Upcoming versions ----- #
 
 # Read way more about versioning here:
 # https://en.wikipedia.org/wiki/Software_versioning
 
 DNA_bases = set('ATGCNatcgn')
 RNA_bases = set('AUGCNaucgn')
+import gzip
 
 def validate_base_seq(seq: str, RNAflag=False) -> bool:
     '''This function takes a string. Returns True if string is composed
@@ -89,35 +92,51 @@ def reverse_complement(DNA: str) -> str:
     reverse = reverse[::-1]
     return reverse
 
-def init_list(lst: list, value: float=0.0) -> list:
+def init_list(lst: list, value: float=0.0, lent: int=101) -> list:
     '''This function takes an empty list and will populate it with
     the value passed in "value". If no value is passed, initializes list
     with 101 values of 0.0.'''
     i = 0
-    while i < 101:
+    while i < lent:
         lst.append(value)
         i +=1
     return lst
 
-def populate_list(in_file: str, printer = False) -> tuple[list, int]:
+def populate_list(in_file: str, printer = False, compressed = False, lent: int=101) -> tuple[list, int]:
     """Takes in a FASTQ file and outputs a tuple containing a list, 
     which contains the sum total of quality scores for the index 
     position base pair, and an integer stating the number of lines in the file."""
     pop_lst = []
-    pop_lst = init_list(pop_lst)
-    with open(in_file, "rt") as fq:
-        i = 0
-        r = 0 #running check
-        for line in fq:
-            line = line.strip()
-            i += 1
-            if i%4 == 0:
-                r += 1
-                for j,letter in enumerate(line):
-                    pop_lst[j] += convert_phred(letter)
-            if r%500000 == 0 and printer == True: #to check if/how function is running
-                print(r)
-        return (pop_lst, i)
+    pop_lst = init_list(pop_lst, lent=lent)
+    if compressed:
+        with gzip.open(in_file, "rt") as fq:
+            i = 0
+            r = 0 #running check
+            for line in fq:
+                line = line.strip()
+                i += 1
+                if i%4 == 0:
+                    r += 1
+                    for j,letter in enumerate(line):
+                        pop_lst[j] += convert_phred(letter)
+                if r%500000 == 0 and printer == True: #to check if/how function is running
+                    print(r)
+            return (pop_lst, i)
+
+    else:
+        with open(in_file, "rt") as fq:
+            i = 0
+            r = 0 #running check
+            for line in fq:
+                line = line.strip()
+                i += 1
+                if i%4 == 0:
+                    r += 1
+                    for j,letter in enumerate(line):
+                        pop_lst[j] += convert_phred(letter)
+                if r%500000 == 0 and printer == True: #to check if/how function is running
+                    print(r)
+            return (pop_lst, i)
 
 
 
