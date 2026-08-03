@@ -16,24 +16,36 @@
 
 
 # Overview
-(updated ___)
-- usrbintime 
-    - Time
-        - User time
-        - System time
-        - Elapsed time
-    - CPU
-        - Percent of CPU this job got
-    - Memory
-        - maximum resident set size
+I forgot to do usr bin time for the sbatch commands I ran, sorry! They did take forever tho so idk if I wanna try and run them again to time it. (I'll do it overnight or something)
 
 ## Assignment the first
 
+### Part 1
+
+
+### Part 2
+First attempt at pseudocode is `draft_of_code.md` and the final pseudocode is `PH_part_2_pseudocode.md`. Received feedback that my quality score check was for the read and not for the index, so I corrected it.
+
 ## Assignment the second
+
+Gave feedback to Adrian, Hannah K, and Lisa. Details on GitHub.
 
 ## Assignment the third
 
+
 # Log
+
+## 8/2/2026:
+Why did it take me so long to run my scripts on a test file. No idea. Anyways
+
+### Demux.py
+I realized how confusing the whole R1,R2 thing was, so I attempted to rename R1 and R2 to forward and reverse. I may decide I hate it and redo it, but I think it makes things less confusing for right now
+
+### Input and output files
+Was it more work to find actual records that worked for this? Probably. I took the first two records from the files as the unknowns, the two full records in `zcat 1294_S1_L008_R2_001.fastq.gz | head -n 200000 | tail ` as the correctly matched ones, and then I swapped their indexes for the swapped one. They are unfortunately confusingly named, and for that I am sorry.
+
+### Scripting for assignment the first
+Oh god was this a headache. Ran the first two and last two reads in two separate scripts so it wouldnt take as long, and put the indexes first so I could confirm that it was working faster. Had to add a lot of toggles in functions and scripts in order for this to run correctly, but I finally did get it! 
 
 ## 7/29/2026: Assignment the third (and first)
 Started reviewing the comments I got, made revisions to pseudocode
