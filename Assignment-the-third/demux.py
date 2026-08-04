@@ -6,116 +6,150 @@ import itertools as it
 import gzip
 from typing import TextIO
 
+## CHANGE READ 1 TO FORWARD
+## CHANGE READ 2 TO REVERSE
+## CHANGE INDEX 1 TO FORWARD INDEX
+## CHANGE INDEX 2 TO REVERSE INDEX
+
 def get_args():
-    parser = arg.ArgumentParser(description="Takes in 2 __ fastq files and 2 index __ fastq files, " \
-    "the file name of the indexes, and the file location of the output")
-    parser.add_argument('-r1', '--read_1', type = str, required=True)
-    parser.add_argument('-i1', '--index_1', type = str, required=True)
-    parser.add_argument('-r2', '--read_2', type = str, required=True)
-    parser.add_argument('-i2', '--index_2', type = str, required=True)
-    parser.add_argument('-f', '--indexes_file', type = str, required=True)
+    parser = arg.ArgumentParser(description="Takes in 2 read fastq files and 2 index fastq files, " \
+    "the file name of the indexes, and the folder location of the output")
+    parser.add_argument('-f', '--forward_read', type = str, required=True)
+    parser.add_argument('-fi', '--forward_index', type = str, required=True)
+    parser.add_argument('-r', '--reverse_read', type = str, required=True)
+    parser.add_argument('-ri', '--reverse_index', type = str, required=True)
+    parser.add_argument('-i', '--indexes_file', type = str, required=True)
     parser.add_argument('-l', "--output_location", type = str, required=True)
+    parser.add_argument("-u", "--uncompressed", action="store_true")
     return parser.parse_args()
 
 def write_output_file(fh, read_record: list, indx1:str, indx2:str):
     '''Takes in a file handle of a fastq file, and a list containing each line of a fastq record. Default index inputs are variables named index1 and index2.'''
-    add_index_to_header = indx1 + "-" + indx2 + "\n"
+    add_index_to_header = " " + indx1 + "-" + indx2 + "\n"
     fh.write(read_record[0] + add_index_to_header)
     fh.write(read_record[1] + "\n")
     fh.write(read_record[2] + "\n")
     fh.write(read_record[3] + "\n") 
 
 args = get_args()
-read1 = args.read_1
-read2 = args.read_2
-index_R1 = args.index_1
-index_R2 = args.index_2
+fow = args.forward_read
+rev = args.reverse_read
+index_forward = args.forward_index
+index_reverse = args.reverse_index
 output = args.output_location
+uncomp = args.uncompressed
 
 index_file = args.indexes_file
-single_indexes = []
+single_indexes = set() #to make it easier to find things in it
 
 with open(index_file, "rt") as inf:
-    for index in inf:
-        single_indexes.append(index)
+    for line in inf:
+        line = line.strip().split()
+        if line[4].isupper():
+            single_indexes.add(line[4])
 
 index_pairs = it.product(single_indexes, repeat=2)
 count_index_pairs = dict.fromkeys(index_pairs,0)
 
-matched_files= {}
+handle_f = {}
+handle_r = {}
+file_loc_f = {}
+file_loc_r = {}
+
 for inx in single_indexes:
-    matched_files[str(inx)+"_R1"] = output + "/R1_" + str(inx) + ".fastq"
-    matched_files[str(inx)+"_R2"] = output + "/R2_" + str(inx) + ".fastq"
+    file_loc_f[inx] = output + "forward_" + str(inx) + ".fastq"
+    file_loc_r[inx] = output + "reverse_" + str(inx) + ".fastq"
 
-r1 = gzip.open(read1,"rt")
-r2 = gzip.open(read2,"rt")
-i1 = gzip.open(index_R1, "rt")
-i2 = gzip.open(index_R2, "rt")
-hop_R1 = open(output + "/R1_hopped.fastq", "w")
-hop_R2 = open(output + "/R2_hopped.fastq", "w")
-unkn_R1 = open(output + "/R1_unknown.fastq", "w")
-unkn_R2 = open(output + "/R2_unknown.fastq", "w")
-
-for handle, name in matched_files.items():
+for index, name in file_loc_f.items():
     handle = open (name, "w")
+    handle_f[index] = handle
+for index, name in file_loc_r.items():
+    handle = open (name, "w")
+    handle_r[index] = handle
+
+if uncomp:
+    r1 = open(fow, "rt")
+    r2 = open(rev, "rt")
+    i1 = open(index_forward, "rt")
+    i2 = open(index_reverse, "rt")
+else:
+    r1 = gzip.open(fow, "rt")
+    r2 = gzip.open(rev, "rt")
+    i1 = gzip.open(index_forward, "rt")
+    i2 = gzip.open(index_reverse, "rt")
+
+hop_f = open(output + "/forward_hopped.fastq", "w")
+hop_r = open(output + "/reverse_hopped.fastq", "w")
+unkn_f = open(output + "/forward_unknown.fastq", "w")
+unkn_r = open(output + "/reverse_unknown.fastq", "w")
 
 count_matched_indices = 0
 count_hopped_indices = 0
 count_unknown = 0
 
 while True:
-    r1_rec = []
-    r2_rec = []
-    i1_rec = []
-    i2_rec = []
+    #opening lists to store the fast q records
+    f_rec = []
+    r_rec = []
+    fi_rec = []
+    ri_rec = []
+
+    #reading 4 lines
     for i in range(4):
-        r1_rec.append(r1.readline().strip()) 
-        r2_rec.append(r2.readline().strip())
-        i1_rec.append(i1.readline().strip())
-        i2_rec.append(i2.readline().strip()) 
-    if r1_rec == ["", "", "", ""]:
+        f_rec.append(r1.readline().strip()) 
+        r_rec.append(r2.readline().strip())
+        fi_rec.append(i1.readline().strip())
+        ri_rec.append(i2.readline().strip()) 
+    if f_rec == ["", "", "", ""]:
         break
 
-    inx1 = i1_rec[1]
-    inx2 = bi.reverse_complement(i2_rec[1])
-    qual_i1 = bi.qual_score(i1_rec[3])
-    qual_i2 = bi.qual_score(i2_rec[3])
+    #storing indexes and index quality scores
+    inx_fow = fi_rec[1]
+    inx_rev = bi.reverse_complement(ri_rec[1])
+    qual_i1 = bi.qual_score(fi_rec[3])
+    qual_i2 = bi.qual_score(ri_rec[3])
 
-    if "N" in inx2 or "N" in inx2: #or quality score stuff
+    if "N" in inx_rev or "N" in inx_rev: #or quality score stuff
         count_unknown += 1
-        write_output_file(unkn_R1,read1,inx1,inx2)
-        write_output_file(unkn_R2,read2,inx1,inx2)
-    elif inx1==inx2 and inx1 in single_indexes:
-        count_matched_indices += 1
-        count_index_pairs[inx1,inx2] += 1
-        out_R1 = inx1 + "_R1"
-        out_R2 = inx2 + "_R2"
-        write_output_file(out_R1,read1,inx1,inx2)
-        write_output_file(out_R2,read2,inx1,inx2)
+        write_output_file(unkn_f, f_rec, inx_fow, inx_rev)
+        write_output_file(unkn_r, r_rec, inx_fow, inx_rev)
 
-    elif inx1 in single_indexes and inx2 in single_indexes:
+    #they match
+    elif inx_fow==inx_rev and inx_fow in single_indexes:
+        count_matched_indices += 1
+        count_index_pairs[inx_fow, inx_rev] += 1
+
+        write_output_file(handle_f[inx_fow], f_rec, inx_fow, inx_rev)
+        write_output_file(handle_r[inx_rev], r_rec, inx_fow, inx_rev)
+
+    #they don't matched but theyre in there
+    elif inx_fow in single_indexes and inx_rev in single_indexes:
         count_hopped_indices += 1
-        write_output_file(hop_R1,read1,inx1,inx2)
-        write_output_file(hop_R2,read2,inx1,inx2)
+        write_output_file(hop_f, f_rec, inx_fow, inx_rev)
+        write_output_file(hop_r, r_rec, inx_fow, inx_rev)
     else:
         count_unknown += 1
-        write_output_file(unkn_R1,read1,inx1,inx2)
-        write_output_file(unkn_R2,read2,inx1,inx2)
+        write_output_file(unkn_f, f_rec, inx_fow, inx_rev)
+        write_output_file(unkn_r, r_rec, inx_fow, inx_rev)
 
 r1.close()
 r2.close()
 i1.close()
 i2.close()
-hop_R1.close()
-hop_R2.close()
-unkn_R1.close()
-unkn_R2.close()
+hop_f.close()
+hop_r.close()
+unkn_f.close()
+unkn_r.close()
+
 #i do not know if this is how thats supposed to be done
-for handle, name in matched_files.items():
+for index, handle in handle_f.items():
+    handle.close()
+for index,handle in handle_r.items():
     handle.close()
 
 total = count_matched_indices + count_hopped_indices + count_unknown
 
+print(count_index_pairs)
 print(f"Number of properly matched read-pairs: {count_matched_indices}")
 print(f"Proportion of read-pairs that were properly matched: {count_matched_indices / total}")
 print(f"Number of pairs with index-hopping observed: {count_hopped_indices}")
